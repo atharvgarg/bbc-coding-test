@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="content-language" content="en" />
+<meta http-equiv="Content-Type" content="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<link href="main.css" media="all" rel="stylesheet" type="text/css" />
+<script>
+th{
+cursor: pointer;
+}
+ </script>
+</head>
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<h1> BBC Table </h1>
+<h3> This table shows the monthly broadcasts by BBC in the year 2009 </h3>
+<table>
+
+<div id = "head">
+<thead>
+	<th class = "date" onclick='sort("date")'>Date</th>
+	<th class = "one" onclick = 'sort("one")'>BBC One</th>
+	<th class = "two" onclick = 'sort("two")'>BBC Two</th>
+	<th class = "three" onclick = 'sort("three")'>BBC Three</th>
+	<th class = "news" onclick = 'sort("news")'>BBC News 24</th>
+	<th class = "cbbc" onclick = 'sort("cbbc")'>CBBC</th>
+	<th class = "cbee" onclick = 'sort("cbee")'>CBeebies</th>
+</thead>
+</div>
+<tbody id='bbc'></tbody>
+</table id = "table_id">
+<script>
+
+$.getJSON('data.json', function (data) {
+    console.log(data);
+	var keys = Object.keys(data);
+	var dates = ["January","February","March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+	var table="";
+	for (var i = 0; i < keys.length ; i++)
+	{
+	var date = keys[i].split("-");
+	date[1] = dates[parseInt(date[1])-1];
+	table+="<tr><td class='date'>"+date[1]+" "+date[0]+"</td><td class='one'>"+
+	data[keys[i]]['bbcone']+"</td><td class = 'two'>"+
+	data[keys[i]]['bbctwo']+"</td><td class = 'three'>"+
+	data[keys[i]]['bbcthree']+"</td><td class = 'news'>"+
+	data[keys[i]]['bbcnews24']+"</td><td class = 'cbbc'>"+
+	data[keys[i]]['cbbc']+"</td><td class = 'cbee'>"+
+	data[keys[i]]['cbeebies']+"</td></tr>";
+	}
+	$("#bbc").html(table);
+});
+
+var currentCol="date";
+var currentOrder=true;
+var months = {
+            "January": "00", "February": "01", "March": "02", "April": "03", "May": "04", "June": "05",
+            "July": "06", "August": "07", "September": "08", "October": "09", "November":"10", "December":"11"
+        };
+function sort(columnClassName) {
+	if(currentCol==columnClassName){
+		if(currentOrder==false){
+			currentOrder=true;
+		}
+		else
+			currentOrder=false;
+	}
+	else{
+		currentCol=columnClassName;
+		currentOrder=true;
+	}
+	var tbody = document.getElementById("bbc");
+	var rows = tbody.getElementsByTagName("tr");
+	var unsorted = true;
+	while (unsorted) {
+		unsorted = false
+		for (var r = 0; r < rows.length - 1; r++) {
+			var row = rows[r];
+			var nextRow = rows[r + 1];
+			var value = row.getElementsByClassName(columnClassName)[0].innerHTML;
+			var nextValue = nextRow.getElementsByClassName(columnClassName)[0].innerHTML;
+			value = value.replace(',', ''); // in case a comma is used in float number
+			nextValue = nextValue.replace(',', '');
+			if (!isNaN(value)) {
+				value = parseFloat(value);
+				nextValue = parseFloat(nextValue);
+			}
+			if(columnClassName=='date'){
+				value = value.split(" ");
+				value[0] = months[value[0]];
+				value = value[1]+value[0];
+				nextValue= nextValue.split(" ");
+				nextValue[0] = months[nextValue[0]];
+				nextValue = nextValue[1]+nextValue[0];
+			}
+			if (currentOrder ? value > nextValue : value < nextValue) {
+				tbody.insertBefore(nextRow, row);
+				unsorted = true;
+			}
+		}
+	}
+}
+</script>
+</body>
+</html>
